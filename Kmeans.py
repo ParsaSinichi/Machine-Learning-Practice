@@ -20,7 +20,7 @@ class KMeans:
         # creating an empty array in size of our samples
         labels = np.empty(self.nSample)
         for cluster_indx, cluster in enumerate(clusters):
-            for sample_indx in clusters:
+            for sample_indx in cluster:
                 labels[sample_indx] = cluster_indx
 
         return labels
@@ -67,10 +67,23 @@ class KMeans:
             old_cent[i], cetroids[i]) for i in range(self.K)]
         return sum(distances) == 0
 
-    def calc_mean_distance():
+    def calc_mean_distance(self):
         """Calculating the average distance from each point to its labeled cluster centroid.
+
         """
-        pass
+        Centroid_distance = [[] for _ in range(self.K)]
+        for i in range(self.K):
+            k.clusters[i]
+            Centroid_distance[i] = [euclidean_distance(
+                k.clusters[i][j], k.centroids[0])for j in range(len(k.clusters[i]))]
+        for i in range(self.K):
+            print(
+                f" average of distances of points belonging to cluster {i} is {np.mean(Centroid_distance[i])}")
+            print(
+                f" STD of distances of points belonging to cluster {i} is {np.std(Centroid_distance[i])}")
+
+    # euclidean_distance(X[1],k.get_centroids(k.clusters)[k.closest_centroid(X[1],k.centroids)])
+        # return Centroid_distance
 
     def fit(self, X):
         self.X = X
@@ -84,7 +97,7 @@ class KMeans:
             self.clusters = self.create_clusters(self.centroids)
             if self.plot_steps:
                 pass
-                # self.plot()
+                self.plot()
 
             old_centroids = self.centroids
             self.centroids = self.get_centroids(self.clusters)
@@ -92,21 +105,18 @@ class KMeans:
                 break
             if self.plot_steps:
                 pass
-                # self.plot()
+                self.plot()
         return self.get_cluster_labels(self.clusters)
 
 
 np.random.seed(42)
-X, y = make_blobs(centers=3, n_samples=1000, n_features=2,
-                  shuffle=True, random_state=22, cluster_std=10)
+X, y = make_blobs(centers=5, n_samples=1000, n_features=2,
+                  shuffle=True, random_state=74, cluster_std=743)
 
 
-# print(y)
 clusters = len(np.unique(y))
 k = KMeans(K=clusters, max_iteration=300, plot_steps=True)
 y_pred = k.fit(X)
 
 k.plot()
-
-# # plt.scatter(X[:, 0], X[:, 1])
-# plt.show()
+k.calc_mean_distance()
