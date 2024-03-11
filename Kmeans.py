@@ -9,30 +9,69 @@ def euclidean_distance(point, data):
 
 
 class KMeans:
-    def __init__(self, K=5, max_iteration=300,) -> None:
+    def __init__(self, K=5, max_iteration=300, plot_steps=True) -> None:
         self.K = K
         self.MaxIter = max_iteration
         self.centroids = []
-        self.clusters=[[] for _ in range(self.K)]
+        self.clusters = [[] for _ in range(self.K)]
+        self.plot_steps = plot_steps
+
+    def get_cluster_labels(self, clusters):
+        # creating an empty array in size of our samples
+        labels = np.empty(self.nSample)
+        for cluster_indx, cluster in enumerate(clusters):
+            for sample_indx in clusters:
+                labels[sample_indx] = cluster_indx
+
+        return labels
+
     def create_clusters(self, centroids):
-        clusters=[[] for _ in range(self.K)]# create a list of list in number of centroids to assign each point to a cluster
+        # create a list of list in number of centroids to assign each point to a cluster
+        clusters = [[] for _ in range(self.K)]
         for indx, sample in enumerate(self.X):
             centroid_indx = self.closest_centroid(sample, centroids)
-            clusters[centroid_indx].append(indx)# we are appending the index of that point 
-            
+            # we are appending the index of that point
+            clusters[centroid_indx].append(indx)
+
         return clusters
 
-    def closest_centroid(self, Point):
+    def closest_centroid(self, Point, Centroids):
         """ calculates the distance between each given point and all of the centroids then returns
         the index of the closets Centroid """
-        result = [euclidean_distance(Point, Centroid)
-                  for Centroid in self.centroids]
+        result = [euclidean_distance(Point, Centroid)for Centroid in Centroids]
         close_indx = np.argmin(result)
         return close_indx
-    def get_centroids(self,clusters):
+
+    def get_centroids(self, clusters):
         # assign the man value of clusters to a centroid
-        for cluster_indx,cluster in enumerate(clusters):
-            np.mean(cluster)
+        centroids = np.zeros((self.K, self.nFeature))
+        for cluster_indx, cluster in enumerate(clusters):
+            cluster_mean = np.mean(self.X[cluster], axis=0)
+            centroids[cluster_indx] = cluster_mean
+        return centroids
+
+    def plot(self):
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        for i, index in enumerate(self.clusters):
+            point = self.X[index].T
+            ax.scatter(*point)
+
+        for point in self.centroids:
+            ax.scatter(*point, marker="x", color="black", linewidth=2)
+
+        plt.show()
+
+    def is_converged(self, old_cent, cetroids):
+        distances = [euclidean_distance(
+            old_cent[i], cetroids[i]) for i in range(self.K)]
+        return sum(distances) == 0
+
+    def calc_mean_distance():
+        """Calculating the average distance from each point to its labeled cluster centroid.
+        """
+        pass
+
     def fit(self, X):
         self.X = X
         self.nSample, self.nFeature = X.shape
@@ -42,14 +81,32 @@ class KMeans:
         self.centroids = [self.X[index] for index in random_sample]
         # Optimizing :
         for _ in range(self.MaxIter):
-            self.clusters=self.create_clusters(self.centroids)
+            self.clusters = self.create_clusters(self.centroids)
+            if self.plot_steps:
+                pass
+                # self.plot()
+
+            old_centroids = self.centroids
+            self.centroids = self.get_centroids(self.clusters)
+            if self.is_converged(old_centroids, self.centroids):
+                break
+            if self.plot_steps:
+                pass
+                # self.plot()
+        return self.get_cluster_labels(self.clusters)
 
 
 np.random.seed(42)
 X, y = make_blobs(centers=3, n_samples=1000, n_features=2,
-                  shuffle=True, random_state=40)
+                  shuffle=True, random_state=22, cluster_std=10)
 
 
 # print(y)
-plt.scatter(X[:, 0], X[:, 1])
-plt.show()
+clusters = len(np.unique(y))
+k = KMeans(K=clusters, max_iteration=300, plot_steps=True)
+y_pred = k.fit(X)
+
+k.plot()
+
+# # plt.scatter(X[:, 0], X[:, 1])
+# plt.show()
